@@ -20,6 +20,8 @@ import warnings
 from scipy.sparse import issparse
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
+#will want to continue to consider what role error should play
+#documenting config once and for all
 
 def prepare_data(
     tokenized_train,
@@ -227,7 +229,7 @@ def train(
                 else None,
                 CLS=config.CLS,
                 MVC=config.GEPC,
-                ECS=config.ESC,
+                ECS=config.ECS,
                 mod_types=mod_types if config.use_mod else None,
                 # do_sample=do_sample_in_train,
                 # generative_training=False
@@ -278,7 +280,7 @@ def train(
                     .item()
                 ) / celltype_labels.size(0)
 
-            if config.ESC:
+            if config.ECS:
                 loss_ecs = 10 * output_dict["loss_ecs"]
                 loss = loss + loss_ecs
                 metrics_to_log.update({"train/ecs": loss_ecs.item()})
@@ -315,7 +317,7 @@ def train(
         total_gep += loss_gep.item() if config.GEP else 0.0
         total_cls += loss_cls.item() if config.CLS else 0.0
         total_gepc += loss_gepc.item() if config.GEPC else 0.0
-        total_ecs += loss_ecs.item() if config.ESC else 0.0
+        total_ecs += loss_ecs.item() if config.ECS else 0.0
         total_dab += loss_dab.item() if config.DAR else 0.0
         total_zero_log_prob += (
             loss_zero_log_prob.item()
@@ -334,7 +336,7 @@ def train(
             cur_gep = total_gep / log_interval if config.GEP else 0.0
             cur_cls = total_cls / log_interval if config.CLS else 0.0
             cur_gepc = total_gepc / log_interval if config.GEPC else 0.0
-            cur_ecs = total_ecs / log_interval if config.ESC else 0.0
+            cur_ecs = total_ecs / log_interval if config.ECS else 0.0
             cur_dab = total_dab / log_interval if config.DAR else 0.0
             cur_zero_log_prob = (
                 total_zero_log_prob / log_interval if config.explicit_zero_prob else 0.0
@@ -354,7 +356,7 @@ def train(
                 + (f"cls {cur_cls:5.2f} | " if config.CLS else "")
                 # + (f"err {cur_error:5.2f} | " if config.CLS else "")
                 + (f"gepc {cur_gepc:5.2f} |" if config.GEPC else "")
-                + (f"ecs {cur_ecs:5.2f} |" if config.ESC else "")
+                + (f"ecs {cur_ecs:5.2f} |" if config.ECS else "")
                 + (f"dar {cur_dab:5.2f} |" if config.DAR else "")
             )
             total_loss = 0
@@ -493,7 +495,7 @@ def predict(
                     else None,
                     CLS=config.CLS,
                     MVC=config.GEPC,
-                    ECS=config.ESC,
+                    ECS=config.ECS,
                 )
 
                 output_values = output_dict["cls_output"]
